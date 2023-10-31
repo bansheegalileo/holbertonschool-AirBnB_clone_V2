@@ -10,6 +10,7 @@ from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
 
+
 class FileStorage:
     def __init__(self):
         self.file_path = "./file.json"
@@ -20,7 +21,8 @@ class FileStorage:
 
     def all(self, cls=None) -> Dict[str, object]:
         if cls is not None:
-            return {key: obj for key, obj in self.objects.items() if isinstance(obj, cls)}
+            return {key: obj for key, obj in self.objects.items()
+                    if isinstance(obj, cls)}
         return self.objects
 
     def new(self, obj: object):
