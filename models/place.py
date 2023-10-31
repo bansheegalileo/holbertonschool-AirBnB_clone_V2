@@ -3,37 +3,24 @@
 Place class module
 """
 
+from models.base_model import BaseModel, Base
+from sqlalchemy import Column, String, Integer, Float
+from sqlalchemy.orm import relationship
 
-from typing import Any
-from datetime import datetime
-from models.base_model import BaseModel
-
-
-class Place(BaseModel):
+class Place(BaseModel, Base):
     """Defines Place class"""
+    __tablename__ = 'places'
+    city_id = Column(String(60), nullable=False)
+    user_id = Column(String(60), nullable=False)
+    name = Column(String(128), nullable=False)
+    description = Column(String(1024))
+    number_rooms = Column(Integer, nullable=False, default=0)
+    number_bathrooms = Column(Integer, nullable=False, default=0)
+    max_guest = Column(Integer, nullable=False, default=0)
+    price_by_night = Column(Integer, nullable=False, default=0)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    amenity_ids = []
 
-    city_id: str = ""
-    user_id: str = ""
-    name: str = ""
-    description: str = ""
-    number_rooms: int = 0
-    number_bathrooms: int = 0
-    max_guest: int = 0
-    price_by_night: int = 0
-    latitude: float = 0.0
-    longitude: float = 0.0
-    amenity_ids: str = ""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initializes instances"""
-        if kwargs:
-            if "__class__" in kwargs:
-                del kwargs["__class__"]
-            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
-                                                     self.timeformat)
-            if "updated_at" in kwargs:
-                kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
-                                                         self.timeformat)
-            super().__init__(*args, **kwargs)
-        else:
-            super().__init__(*args, **kwargs)
+    user = relationship("User", back_populates="places")
+    reviews = relationship("Review", back_populates="place")

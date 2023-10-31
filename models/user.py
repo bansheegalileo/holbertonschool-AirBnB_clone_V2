@@ -1,12 +1,17 @@
 #!/usr/bin/python3
 
-""" Module that writes subclass User """
-from models.base_model import BaseModel
+"""Module that defines a subclass User"""
 
+from models.base_model import BaseModel, Base
+from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
 
-class User(BaseModel):
-    """ User class is a subclass of BaseModel """
-    email = ""
-    password = ""
-    first_name = ""
-    last_name = ""
+class User(BaseModel, Base):
+    """Represents a User"""
+    __tablename__ = 'users'
+    email = Column(String(128), nullable=False)
+    password = Column(String(128), nullable=False)
+    first_name = Column(String(128))
+    last_name = Column(String(128))
+
+    places = relationship("Place", backref="user", cascade="all, delete-orphan")
