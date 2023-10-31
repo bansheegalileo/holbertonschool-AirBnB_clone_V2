@@ -3,13 +3,12 @@ import json
 import os
 from typing import Dict, Type
 from models.base_model import BaseModel
-from models.user import User  # Import User class
-from models.state import State  # Import State class
-from models.city import City  # Import City class
-from models.amenity import Amenity  # Import Amenity class
-from models.place import Place  # Import Place class
-from models.review import Review  # Import Review class
-
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 
 class FileStorage:
     def __init__(self):
@@ -19,7 +18,9 @@ class FileStorage:
     def clear(self):
         self.objects = {}
 
-    def all(self) -> Dict[str, object]:
+    def all(self, cls=None) -> Dict[str, object]:
+        if cls is not None:
+            return {key: obj for key, obj in self.objects.items() if isinstance(obj, cls)}
         return self.objects
 
     def new(self, obj: object):
@@ -47,6 +48,12 @@ class FileStorage:
         except Exception as e:
             # Handle other exceptions, such as JSON decoding errors
             print(f"Error while reloading data: {e}")
+
+    def delete(self, obj=None):
+        if obj is not None:
+            key = f"{obj.__class__.__name__}.{obj.id}"
+            if key in self.objects:
+                del self.objects[key]
 
     @staticmethod
     def get_class(class_name: str) -> Type[object] or None:
