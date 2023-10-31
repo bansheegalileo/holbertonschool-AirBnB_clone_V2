@@ -11,60 +11,56 @@ from models.place import Place
 from models.review import Review
 
 class FileStorage:
-    def __init__(self):
-        self.file_path = "./file.json"
-        self.objects = {}
+    """what it says on the tin"""
+    __file_path = 'file.json'
+    __objects = {}
 
-    def clear(self):
-        self.objects = {}
-
-    def all(self, cls=None) -> Dict[str, object]:
+    def all(self, cls=None):
+        """returns dictionary"""
         if cls is not None:
-            return {key: obj for key, obj in self.objects.items() if isinstance(obj, cls)}
-        return self.objects
+            fs_dict = {}
+            for key, value in self.__objects.items():
+                if cls == value.__class__ or cls == value.__class__.__name__:
+                    fs_dict[key] = value
+            return fs_dict
+        return self.__objects
 
-    def new(self, obj: object):
-        key = f"{obj.__class__.__name__}.{obj.id}"
-        self.objects[key] = obj
+    def new(self, obj):
+        """adds new to dict"""
+        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
 
     def save(self):
-        nd = {key: value.to_dict() for key, value in self.objects.items()}
-        with open(self.file_path, "w") as f:
-            json.dump(nd, f)
-
-    def reload(self):
-        try:
-            with open(self.file_path, "r", encoding="UTF-8") as f:
-                reloaded = json.load(f)
-                for obj_id, obj_data in reloaded.items():
-                    class_name = obj_data.get("__class__")
-                    cls_func = self.get_class(class_name)
-                    if cls_func:
-                        obj = cls_func(**obj_data)
-                        self.objects[obj_id] = obj
-        except FileNotFoundError:
-            # Handle the case when the file doesn't exist
-            pass
-        except Exception as e:
-            # Handle other exceptions, such as JSON decoding errors
-            print(f"Error while reloading data: {e")
+        """saves dict to file"""
+        with open(FileStorage.__file_path, 'w') as f:
+            temp = {key: val.to_dict() for key, val in self.__objects.items()}
+            json.dump(temp, f)
 
     def delete(self, obj=None):
+        """delete obj from __objects"""
         if obj is not None:
-            key = f"{obj.__class__.__name__}.{obj.id}"
-            if key in self.objects:
-                del self.objects[key]
+            key = obj.__class__.__name__ + '.' + obj.id
+            if key in self.all():
+                del self.all()[key]
+                self.save()
 
-    @staticmethod
-    def get_class(class_name: str) -> Type[object] or None:
-        # Define mappings from class names to class objects
-        class_mappings = {
-            "BaseModel": BaseModel,
-            "User": User,
-            "State": State,
-            "City": City,
-            "Amenity": Amenity,
-            "Place": Place,
-            "Review": Review,
+    def reload(self):
+        """loads dict"""
+        from models import base_model, user, place, state, city, amenity, review
+
+        classes = {
+            'BaseModel': base_model.BaseModel,
+            'User': user.User,
+            'Place': place.Place,
+            'State': state.State,
+            'City': city.City,
+            'Amenity': amenity.Amenity,
+            'Review': review.Review
         }
-        return class_mappings.get(class_name, None)
+        try:
+            temp = {}
+            with open(FileStorage.__file_path, 'r') as f:
+                temp = json.load(f)
+                for key, val in temp.items():
+                    self.all()[key] = classes[val['__class__']](**val)
+        except FileNotFoundError:
+            pass
