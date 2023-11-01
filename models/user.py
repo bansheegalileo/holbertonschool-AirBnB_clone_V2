@@ -2,11 +2,11 @@
 
 """Module that defines a subclass User"""
 
-from models.base_model import BaseModel, Base
+from models.base_model import BaseModel
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-class User(BaseModel, Base):
+class User(BaseModel):
     """Represents a User"""
     __tablename__ = 'users'
     email = Column(String(128), nullable=False)
