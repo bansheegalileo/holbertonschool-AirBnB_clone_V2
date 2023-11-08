@@ -8,18 +8,9 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def all(self, cls=None):
-        """
-        Returns a dictionary of models currently in storage.
-        If cls is provided, it returns a dict of objects of the class.
-        """
-        if cls is not None:
-            filtered_objects = {}
-            for key, obj in self.__objects.items():
-                if cls == obj.__class__:
-                    filtered_objects[key] = obj
-            return filtered_objects
-        return self.__objects
+    def all(self):
+        """Returns a dictionary of models currently in storage"""
+        return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -36,13 +27,13 @@ class FileStorage:
 
     def reload(self):
         """Loads storage dictionary from file"""
-        from ..base_model import BaseModel
-        from ..user import User
-        from ..place import Place
-        from ..state import State
-        from ..city import City
-        from ..amenity import Amenity
-        from ..review import Review
+        from models.base_model import BaseModel
+        from models.user import User
+        from models.place import Place
+        from models.state import State
+        from models.city import City
+        from models.amenity import Amenity
+        from models.review import Review
 
         classes = {
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
@@ -54,17 +45,6 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                    self.all()[key] = classes[val['__class__']](**val)
+                        self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
-
-    def delete(self, obj=None):
-        """
-        Deletes an object from __objects if it's inside.
-        If obj is equal to None, the method does nothing.
-        """
-        if obj is not None:
-            key = obj.__class__.__name__ + "." + obj.id
-            if key in self.all():
-                del self.all()[key]
-                self.save()
