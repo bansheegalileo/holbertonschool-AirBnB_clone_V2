@@ -17,4 +17,13 @@ class State(BaseModel, Base):
         cities = relationship("City", backref="state")
     else:
         name = ""
-	cites = []
+        cities = []
+
+    def cities(self):
+        """city getter"""
+        city_list = []
+        for city_id in self.cities:
+            city = models.storage.get(City, city_id)
+            if city:
+                city_list.append(city)
+        return city_list
